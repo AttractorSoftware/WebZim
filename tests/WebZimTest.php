@@ -44,11 +44,4 @@ class WebZimTest extends \PHPUnit_Framework_TestCase
 
     }
 
-//    public function testReplacePlaceHolders()
-//    {
-//        $template_contents = file_get_contents('template.php');
-//        $file_contents = $this->app->replacePlaceHoldersToEditableDivs($template_contents);
-//        $this->assertNotEquals($file_contents, $template_contents);
-//        $this->assertContains('<div class="editable"', $file_contents);
-//    }
 }
