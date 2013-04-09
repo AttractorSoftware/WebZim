@@ -1,0 +1,12 @@
+RewriteEngine on
+RewriteRule ^js/ckeditor/(.+).js$ index.php?js=$1.js
+
+# Check if .html file already exists -- if so, do nothing
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteCond %{THE_REQUEST} (.*)\.html
+RewriteRule ^.*$ - [NC,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !=/favicon.ico
+RewriteRule ^(.*)$ index.php [L,QSA]
