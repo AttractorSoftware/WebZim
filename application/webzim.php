@@ -19,18 +19,34 @@ class WebZim
         {
             $this->returnJavascriptReponse();
         }
-        else if (isset($_POST['container']) && isset($_POST['text']))
+        if ($this->isUpdateContentAction())
         {
             $referer = $_SERVER["HTTP_REFERER"];
             $path = $this->getFileNameFromPath($referer);
             $this->updateBlockContents($path, $_POST['container'], $_POST['text']);
         }
-        else if(strpos($_SERVER['REQUEST_URI'], '.html') !== false)
+        if($this->isCreatePageAction())
         {
             $filename = $this->getFileNameFromPath($_SERVER['REQUEST_URI']);
             $this->createPageFile($filename);
             header('Location: '.$filename);
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCreatePageAction()
+    {
+        return strpos($_SERVER['REQUEST_URI'], '.html') !== false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isUpdateContentAction()
+    {
+        return isset($_POST['container']) && isset($_POST['text']);
     }
 
     public function createPageFile($filename)
