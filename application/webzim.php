@@ -8,35 +8,77 @@ class WebZim
     public function run()
     {
 
+        if($this->didUserJustLogin())
+        {
+            header('Location: index.html');
+        }
+
         if ($this->doesUserWantToAuthenticate()) {
             $this->authenticateUser();
         }
+
         if(!$this->isCorrectCredentials())
         {
             exit;
         }
-        else if ($this->isEditorJavascriptRequest())
+
+        if ($this->isEditorJavascriptRequest())
         {
             $this->returnJavascriptReponse();
         }
+
         if ($this->isUpdateContentAction())
         {
             $referer = $_SERVER["HTTP_REFERER"];
             $path = $this->getFileNameFromPath($referer);
             $this->updateBlockContents($path, $_POST['container'], $_POST['text']);
         }
-        if($this->isCreatePageAction())
+
+        if($this->isCreatePageConfirmPage())
         {
             $filename = $this->getFileNameFromPath($_SERVER['REQUEST_URI']);
+            echo $this->getConfirmFormForFile($filename);
+        }
+
+        if($this->isCreatePageConfirmed())
+        {
+            $filename = $_REQUEST['filename'];
             $this->createPageFile($filename);
             header('Location: '.$filename);
         }
+        else if(isset($_REQUEST['filename']) && isset($_REQUEST['no']))
+        {
+            header('Location: index.html');
+        }
+
     }
 
     /**
      * @return bool
      */
-    public function isCreatePageAction()
+    public function isCreatePageConfirmed()
+    {
+        return isset($_REQUEST['filename']) && isset($_REQUEST['yes']);
+    }
+
+    /**
+     * @return bool
+     */
+    public function didUserJustLogin()
+    {
+        return $this->getFileNameFromPath($_SERVER['REQUEST_URI']) == 'index.php' && $this->isCorrectCredentials();
+    }
+
+    public function getConfirmFormForFile($filename)
+    {
+        return   "<html><body><form action='index.php'><p>Do you really want to craete <strong>{$filename}</strong></p>"
+            ."<p><input type='submit' value='Yes' name='yes'> <input type='submit' value='No' name='no'>"
+            ."<input type='hidden' name='filename' value='{$filename}'></p></form></body></html>";
+    }
+    /**
+     * @return bool
+     */
+    public function isCreatePageConfirmPage()
     {
         return strpos($_SERVER['REQUEST_URI'], '.html') !== false;
     }
@@ -51,10 +93,22 @@ class WebZim
 
     public function createPageFile($filename)
     {
+        $this->validateFileExtension($filename);
         $template = ROOT_PATH.'/template.php';
         $templateContents = file_get_contents($template);
         $path = ROOT_PATH.'/web/'.$filename;
         file_put_contents($path,  $templateContents);
+    }
+
+    /**
+     * @param $filename
+     * @throws RuntimeException
+     */
+    public function validateFileExtension($filename)
+    {
+        if (strchr($filename, '.') != '.html') {
+            throw new RuntimeException("Invalid file extension to create");
+        }
     }
 
 
@@ -66,12 +120,7 @@ class WebZim
         return $contents;
     }
 
-    protected function authenticateUser() {
-        header('WWW-Authenticate: Basic realm="My Realm"');
-        header('HTTP/1.0 401 Unauthorized');
-        echo "You must enter a valid login ID and password to access this resource\n";
-        exit;
-    }
+
 
     public function updateBlockContents($file, $container, $text)
     {
@@ -121,7 +170,10 @@ class WebZim
      */
     protected  function doesUserWantToAuthenticate()
     {
-        return !isset($_SERVER['PHP_AUTH_USER']) && @$_GET['login'];
+        if(!$this->isCorrectCredentials() && @$_GET['login'])
+            return true;
+        else
+            return false;
     }
 
     protected  function isCorrectCredentials()
@@ -141,5 +193,11 @@ class WebZim
         return false;
     }
 
+    protected function authenticateUser() {
+        header('WWW-Authenticate: Basic realm="My Realm"');
+        header('HTTP/1.0 401 Unauthorized');
+        echo "You must enter a valid login ID and password to access this resource\n";
+        exit;
+    }
 
 }

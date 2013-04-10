@@ -9,7 +9,7 @@ class WebZimTest extends \PHPUnit_Framework_TestCase
         $this->app = new WebZim();
     }
 
-    public function testIndexPage()
+    public function testCreatePage()
     {
         $this->app->createPageFile('index.html');
         $this->assertEquals(true, file_exists(ROOT_PATH.'/web/index.html'));
@@ -43,5 +43,26 @@ class WebZimTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('courts/somefile.html', $filename);
 
     }
+
+    public function testGetConfirmFormForFile()
+    {
+        $expected = "<html><body><form action='index.php'><p>Do you really want to craete <strong>test.html</strong></p>"
+            ."<p><input type='submit' value='Yes' name='yes'> <input type='submit' value='No' name='no'>"
+            ."<input type='hidden' name='filename' value='test.html'></p></form></body></html>";
+        $actual = $this->app->getConfirmFormForFile('test.html');
+        $this->assertEquals($expected, $actual);
+    }
+
+
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testCreatePageFileDoesNotCreateOtherThanHTMLFiles()
+    {
+        $this->app->createPageFile('test.php');
+        $this->app->createPageFile('test.js');
+    }
+
+
 
 }
