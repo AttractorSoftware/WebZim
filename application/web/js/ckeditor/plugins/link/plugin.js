@@ -68,7 +68,7 @@ CKEDITOR.plugins.add( 'link', {
 		editor.addCommand( 'unlink', new CKEDITOR.unlinkCommand() );
 		editor.addCommand( 'removeAnchor', new CKEDITOR.removeAnchorCommand() );
 
-		editor.setKeystroke( CKEDITOR.CTRL + 76 /*L*/, 'link' );
+
 
 		if ( editor.ui.addButton ) {
 			editor.ui.addButton( 'Link', {
@@ -101,6 +101,7 @@ CKEDITOR.plugins.add( 'link', {
                     if(isCTRL)
                     {
                         window.open(element.$.href,'_blank');
+                        isCTRL = false;
                     }
                 }
             });
@@ -127,7 +128,7 @@ CKEDITOR.plugins.add( 'link', {
 					evt.data.dialog = 'anchor';
 			}
 		});
-
+        editor.setKeystroke( CKEDITOR.CTRL + 76 /*L*/, 'link' );
 		// If the "menu" plugin is loaded, register the menu items.
 		if ( editor.addMenuItems ) {
 			editor.addMenuItems({
