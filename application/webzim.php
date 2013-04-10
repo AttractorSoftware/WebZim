@@ -46,11 +46,19 @@ class WebZim
             $this->createPageFile($filename);
             header('Location: '.$filename);
         }
-        else if(isset($_REQUEST['filename']) && isset($_REQUEST['no']))
+        else if($this->isCreatePageNotConfirmed())
         {
             header('Location: index.html');
         }
 
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCreatePageNotConfirmed()
+    {
+        return isset($_REQUEST['filename']) && isset($_REQUEST['no']);
     }
 
     /**
@@ -132,9 +140,9 @@ class WebZim
 
     }
 
-    public function getFileNameFromPath($referer)
+    public function getFileNameFromPath($rawPath)
     {
-        $parsed = parse_url($referer);
+        $parsed = parse_url($rawPath);
         $path = $parsed['path'];
 
         if($path == '/')

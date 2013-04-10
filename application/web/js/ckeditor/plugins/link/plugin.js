@@ -91,6 +91,31 @@ CKEDITOR.plugins.add( 'link', {
 		CKEDITOR.dialog.add( 'link', this.path + 'dialogs/link.js' );
 		CKEDITOR.dialog.add( 'anchor', this.path + 'dialogs/anchor.js' );
 
+        editor.on('contentDom', function(evt){
+            var isCTRL = false;
+
+            this.document.on('click', function(ev)
+            {
+                var element = CKEDITOR.plugins.link.getSelectedLink( editor ) || ev.data.element;
+                if (element!=undefined &&  element.is( 'a' ) ) {
+                    if(isCTRL)
+                    {
+                        window.open(element.$.href,'_blank');
+                    }
+                }
+            });
+
+            editor.document.on( 'keyup', function(event)
+            {
+                if(event.data.$.keyCode == 17) isCTRL=false;
+            });
+
+            editor.document.on( 'keydown', function(event)
+            {
+                if(event.data.$.keyCode == 17) isCTRL=true;
+            });
+
+        });
 		editor.on( 'doubleclick', function( evt ) {
 			var element = CKEDITOR.plugins.link.getSelectedLink( editor ) || evt.data.element;
 
