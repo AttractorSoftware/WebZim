@@ -16,8 +16,6 @@ class WebZim
             $this->authenticateUser();
         }
 
-
-
         if ($this->isMediaRequest()) {
             echo $this->returnMediaResponse();
         }
@@ -27,13 +25,14 @@ class WebZim
 
         if ($this->isUpdateContentAction()) {
             $referer = $_SERVER["HTTP_REFERER"];
-            $path = $this->getFileNameFromPath($referer);
+            $path = FileManager::getFileNameFromPath($referer);
             $this->updateBlockContents($path, $_POST['container'], $_POST['text']);
         }
 
-        if ($this->isCreatePageConfirmPage()) {
-            $filename = $this->getFileNameFromPath($_SERVER['REQUEST_URI']);
-            echo $this->getConfirmFormForFile($filename);
+        if ($this->isCreatePageDialogPage()) {
+            $referer = @$_SERVER["HTTP_REFERER"];
+            $filename = FileManager::getFileNameFromPath($_SERVER['REQUEST_URI']);
+            echo $this->getConfirmFormForFile($filename, $referer);
         }
 
         if ($this->isCreatePageConfirmed()) {
@@ -41,53 +40,41 @@ class WebZim
             $this->createPageFile($filename);
             header('Location: /' . $filename);
         } else if ($this->isCreatePageNotConfirmed()) {
-            header('Location: index.html');
+            $referer = @$_REQUEST['referer'] ? $_REQUEST['referer']: '/index.html';
+            header('Location: '.$referer);
         }
 
     }
 
-    /**
-     * @return bool
-     */
-    public function isCreatePageNotConfirmed()
-    {
-        return isset($_REQUEST['filename']) && isset($_REQUEST['no']);
-    }
-
-    /**
-     * @return bool
-     */
     public function isCreatePageConfirmed()
     {
         return isset($_REQUEST['filename']) && isset($_REQUEST['yes']);
     }
 
-    /**
-     * @return bool
-     */
-    public function didUserJustLogin()
+    public function isCreatePageNotConfirmed()
     {
-        return $this->getFileNameFromPath($_SERVER['REQUEST_URI']) == 'index.php' && $this->isCorrectCredentials();
+        return isset($_REQUEST['filename']) && isset($_REQUEST['no']);
     }
 
-    public function getConfirmFormForFile($filename)
+
+
+    public function didUserJustLogin()
+    {
+        return FileManager::getFileNameFromPath($_SERVER['REQUEST_URI']) == 'index.php' && $this->isCorrectCredentials();
+    }
+
+    public function getConfirmFormForFile($filename, $referer="")
     {
         return "<html><body><form action='index.php'><p>Do you really want to craete <strong>{$filename}</strong></p>"
             . "<p><input type='submit' value='Yes' name='yes'> <input type='submit' value='No' name='no'>"
-            . "<input type='hidden' name='filename' value='{$filename}'></p></form></body></html>";
+            . "<input type='hidden' name='filename' value='{$filename}'><input type='hidden' name='referer' value='{$referer}'></p></form></body></html>";
     }
 
-    /**
-     * @return bool
-     */
-    public function isCreatePageConfirmPage()
+    public function isCreatePageDialogPage()
     {
         return strpos($_SERVER['REQUEST_URI'], '.html') !== false;
     }
 
-    /**
-     * @return bool
-     */
     public function isUpdateContentAction()
     {
         return isset($_POST['container']) && isset($_POST['text']);
@@ -96,23 +83,18 @@ class WebZim
     public function createPageFile($filename)
     {
         $this->validateFileExtension($filename);
-        $this->createFolderIfNotExists($filename);
-        $template = ROOT_PATH . '/../template.php';
-        $templateContents = file_get_contents($template);
-        $path = ROOT_PATH . '/' . $filename;
-        file_put_contents($path, $templateContents);
+        FileManager::createFolderIfNotExists($filename);
+        FileManager::copyFileContents(ROOT_PATH .'/../template.php', ROOT_PATH.'/'.$filename);
+
     }
 
-    /**
-     * @param $filename
-     */
-    protected function createFolderIfNotExists($filename)
+    public function updateBlockContents($file, $container, $text)
     {
-        if (strpos($filename, '/') !== false) {
-            if (!is_dir(dirname(ROOT_PATH . '/' . $filename))) {
-                mkdir(dirname(ROOT_PATH . '/' . $filename), 0755, true);
-            }
-        }
+        $fileContents = file_get_contents(ROOT_PATH . '/' . $file);
+        $parser = str_get_html($fileContents);
+        $div = $parser->find('div[name="' . $container . '"]', 0);
+        $div->innertext = $text;
+        $parser->save(ROOT_PATH . '/' . $file);
     }
 
     /**
@@ -136,57 +118,42 @@ class WebZim
             header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT', true, 304);
         } else {
             $contents = @file_get_contents($filePath);
-            $extension = strrchr($filePath, '.');
-
-            $mime_type = '';
-            switch ($extension) {
-                case ".js":
-                    $mime_type = 'text/javascript';
-                    break;
-                case ".css":
-                    $mime_type = 'text/css';
-                    break;
-                case ".png":
-                    $mime_type = 'image/png';
-                    break;
-                case '.jpg':
-                    $mime_type = 'image/jpeg';
-                    break;
-                case '.gif':
-                    $mime_type = 'image/gif';
-                    break;
-            }
+            $mime_type = $this->getFileMimeType($filePath);
             header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT', true, 200);
             header('Content-type: ' . $mime_type);
             return $contents;
         }
-
-
     }
 
-
-    public function updateBlockContents($file, $container, $text)
+    /**
+     * @param $filePath
+     * @return string
+     */
+    public function getFileMimeType($filePath)
     {
-        $fileContents = file_get_contents(ROOT_PATH . '/' . $file);
-        $parser = str_get_html($fileContents);
-        $div = $parser->find('div[name="' . $container . '"]', 0);
-        $div->innertext = $text;
-        $parser->save(ROOT_PATH . '/' . $file);
-
-    }
-
-    public function getFileNameFromPath($rawPath)
-    {
-        $parsed = parse_url($rawPath);
-        $path = $parsed['path'];
-
-        if ($path == '/') {
-            return 'index.html';
+        $extension = strrchr($filePath, '.');
+        $mime_type = '';
+        switch ($extension) {
+            case ".js":
+                $mime_type = 'text/javascript';
+                break;
+            case ".css":
+                $mime_type = 'text/css';
+                break;
+            case ".png":
+                $mime_type = 'image/png';
+                break;
+            case '.jpg':
+                $mime_type = 'image/jpeg';
+                break;
+            case '.gif':
+                $mime_type = 'image/gif';
+                break;
         }
-        $path = explode("/", $path);
-        unset($path[0]);
-        return (implode('/', $path));
+        return $mime_type;
     }
+
+
 
     protected function returnMediaResponse()
     {
@@ -244,5 +211,45 @@ class WebZim
         echo "You must enter a valid login ID and password to access this resource\n";
         exit;
     }
+}
+class FileManager
+{
+    public static function getFileNameFromPath($rawPath)
+    {
+        $parsed = parse_url($rawPath);
+        $path = $parsed['path'];
+
+        if ($path == '/') {
+            return 'index.html';
+        }
+        $path = explode("/", $path);
+        unset($path[0]);
+        return (implode('/', $path));
+    }
+
+    public static function createFile($path, $contents)
+    {
+
+    }
+
+    public static function createFolderIfNotExists($filePath)
+    {
+        if (strpos($filePath, '/') !== false) {
+            if (!is_dir(dirname(ROOT_PATH . '/' . $filePath))) {
+                mkdir(dirname(ROOT_PATH . '/' . $filePath), 0755, true);
+            }
+        }
+    }
+
+    public static function copyFileContents($sourceFile, $destinationFile)
+    {
+        $sourceContents = file_get_contents($sourceFile);
+        file_put_contents($destinationFile, $sourceContents);
+    }
+}
+
+
+class MediaFileManager
+{
 
 }

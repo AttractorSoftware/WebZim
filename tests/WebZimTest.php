@@ -33,15 +33,15 @@ class WebZimTest extends \PHPUnit_Framework_TestCase
     public function testGetFileNameFromReferer()
     {
         $referef = "http://webzim.local/";
-        $filename = $this->app->getFileNameFromPath($referef);
+        $filename = FileManager::getFileNameFromPath($referef);
         $this->assertEquals('index.html', $filename);
 
         $referef = "http://webzim.local/somefile.html";
-        $filename = $this->app->getFileNameFromPath($referef);
+        $filename = FileManager::getFileNameFromPath($referef);
         $this->assertEquals('somefile.html', $filename);
 
         $referef = "http://webzim.local/courts/somefile.html";
-        $filename = $this->app->getFileNameFromPath($referef);
+        $filename = FileManager::getFileNameFromPath($referef);
         $this->assertEquals('courts/somefile.html', $filename);
 
     }
@@ -50,8 +50,8 @@ class WebZimTest extends \PHPUnit_Framework_TestCase
     {
         $expected = "<html><body><form action='index.php'><p>Do you really want to craete <strong>test.html</strong></p>"
             ."<p><input type='submit' value='Yes' name='yes'> <input type='submit' value='No' name='no'>"
-            ."<input type='hidden' name='filename' value='test.html'></p></form></body></html>";
-        $actual = $this->app->getConfirmFormForFile('test.html');
+            ."<input type='hidden' name='filename' value='test.html'><input type='hidden' name='referer' value='index.html'></p></form></body></html>";
+        $actual = $this->app->getConfirmFormForFile('test.html', 'index.html');
         $this->assertEquals($expected, $actual);
     }
 
