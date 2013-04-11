@@ -106,12 +106,12 @@ CKEDITOR.plugins.add( 'link', {
                 }
             });
 
-            editor.document.on( 'keyup', function(event)
+            document.on( 'keyup', function(event)
             {
                 if(event.data.$.keyCode == 17) isCTRL=false;
             });
 
-            editor.document.on( 'keydown', function(event)
+            document.on( 'keydown', function(event)
             {
                 if(event.data.$.keyCode == 17) isCTRL=true;
             });

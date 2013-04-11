@@ -108,7 +108,6 @@ class WebZim
         }
     }
 
-
     public function getEditorJavascript($filename)
     {
         $filename = strchr($filename, 'js');
@@ -126,10 +125,6 @@ class WebZim
         return '';
     }
 
-    /**
-     * @param $filePath
-     * @return string
-     */
     public function getFileMimeType($filePath)
     {
         $extension = strrchr($filePath, '.');
@@ -154,7 +149,10 @@ class WebZim
         return $mime_type;
     }
 
-
+    protected function isMediaRequest()
+    {
+        return @$_GET['js'] != '';
+    }
 
     protected function returnMediaResponse()
     {
@@ -168,17 +166,8 @@ class WebZim
         }
         if ($mediaFile){
             return $this->getEditorJavascript($mediaFile);
-
         }
         return "";
-    }
-
-    /**
-     * @return bool
-     */
-    protected function isMediaRequest()
-    {
-        return @$_GET['js'] != '';
     }
 
     /**
