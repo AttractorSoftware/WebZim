@@ -17,7 +17,7 @@ class WebZim
         }
 
         if ($this->isMediaRequest()) {
-            echo $this->returnMediaResponse();
+            $this->returnMediaResponse();
         }
         if (!$this->isCorrectCredentials()) {
             exit;
@@ -108,7 +108,7 @@ class WebZim
         }
     }
 
-    public function getEditorJavascript($filename)
+    public function getMediaFileContents($filename)
     {
         $filename = strchr($filename, 'js');
         $filePath = ROOT_PATH . '/' . $filename;
@@ -116,38 +116,12 @@ class WebZim
         if (isset($headers['If-Modified-Since']) && (strtotime($headers['If-Modified-Since']) == filemtime($filePath))) {
             header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT', true, 304);
         } else {
-            $contents = @file_get_contents($filePath);
-            $mime_type = $this->getFileMimeType($filePath);
             header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT', true, 200);
-            header('Content-type: ' . $mime_type);
-            return $contents;
+            readfile($filePath);
         }
         return '';
     }
 
-    public function getFileMimeType($filePath)
-    {
-        $extension = strrchr($filePath, '.');
-        $mime_type = '';
-        switch ($extension) {
-            case ".js":
-                $mime_type = 'text/javascript';
-                break;
-            case ".css":
-                $mime_type = 'text/css';
-                break;
-            case ".png":
-                $mime_type = 'image/png';
-                break;
-            case '.jpg':
-                $mime_type = 'image/jpeg';
-                break;
-            case '.gif':
-                $mime_type = 'image/gif';
-                break;
-        }
-        return $mime_type;
-    }
 
     protected function isMediaRequest()
     {
@@ -165,7 +139,7 @@ class WebZim
             }
         }
         if ($mediaFile){
-            return $this->getEditorJavascript($mediaFile);
+            $this->getMediaFileContents($mediaFile);
         }
         return "";
     }
