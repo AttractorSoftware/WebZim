@@ -65,6 +65,28 @@ class WebZimTest extends \PHPUnit_Framework_TestCase
         $this->app->createPageFile('test.js');
     }
 
+    public function testCreatePageWithFolders()
+    {
+        $this->app->createPageFile('people/collegues/azamat.html');
+        $actual = file_get_contents(ROOT_PATH.'/people/collegues/azamat.html');
+        $expected = file_get_contents(ROOT_PATH.'/../template.php');
+        $this->assertEquals($expected, $actual);
+        unlink(ROOT_PATH.'/people/collegues/azamat.html');
+        rmdir(ROOT_PATH.'/people/collegues');
+    }
+
+    public function testCreatePageWithFolder()
+    {
+        $this->app->createPageFile('people/azamat.html');
+        $actual = file_get_contents(ROOT_PATH.'/people/azamat.html');
+        $expected = file_get_contents(ROOT_PATH.'/../template.php');
+        $this->assertEquals($expected, $actual);
+        unlink(ROOT_PATH.'/people/azamat.html');
+        rmdir(ROOT_PATH.'/people');
+    }
+
+
+
 
 
 }
