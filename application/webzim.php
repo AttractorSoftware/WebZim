@@ -123,6 +123,7 @@ class WebZim
             header('Content-type: ' . $mime_type);
             return $contents;
         }
+        return '';
     }
 
     /**
@@ -169,6 +170,7 @@ class WebZim
             return $this->getEditorJavascript($mediaFile);
 
         }
+        return "";
     }
 
     /**
@@ -225,11 +227,6 @@ class FileManager
         $path = explode("/", $path);
         unset($path[0]);
         return (implode('/', $path));
-    }
-
-    public static function createFile($path, $contents)
-    {
-
     }
 
     public static function createFolderIfNotExists($filePath)
