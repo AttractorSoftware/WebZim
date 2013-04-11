@@ -1,6 +1,8 @@
 <?php
-require_once('../application/webzim.php');
 define('ROOT_PATH', dirname(__FILE__).'/../application/web');
+require_once(ROOT_PATH.'/../webzim.php');
+
+
 class WebZimTest extends \PHPUnit_Framework_TestCase
 {
     /** @var WebZim */
