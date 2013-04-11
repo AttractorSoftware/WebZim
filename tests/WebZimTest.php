@@ -1,5 +1,6 @@
 <?php
 require_once('../application/webzim.php');
+define('ROOT_PATH', dirname(__FILE__).'/../application/web');
 class WebZimTest extends \PHPUnit_Framework_TestCase
 {
     /** @var WebZim */
@@ -11,8 +12,9 @@ class WebZimTest extends \PHPUnit_Framework_TestCase
 
     public function testCreatePage()
     {
-        $this->app->createPageFile('index.html');
-        $this->assertEquals(true, file_exists(ROOT_PATH.'/web/index.html'));
+        $this->app->createPageFile('testing.html');
+        $this->assertEquals(true, file_exists(ROOT_PATH.'/testing.html'));
+        unlink(ROOT_PATH.'/testing.html');
     }
 
 
@@ -22,9 +24,9 @@ class WebZimTest extends \PHPUnit_Framework_TestCase
         $text  = "<h2>Hello friends</h2><p>This is sample text</p>";
         $this->app->createPageFile('test.html');
         $this->app->updateBlockContents('test.html',$container, $text);
-        $contents = file_get_contents(ROOT_PATH.'/web/test.html');
+        $contents = file_get_contents(ROOT_PATH.'/test.html');
         $this->assertContains($text, $contents);
-        unlink(ROOT_PATH.'/web/test.html');
+        unlink(ROOT_PATH.'/test.html');
 
     }
 

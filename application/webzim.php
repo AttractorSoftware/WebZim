@@ -1,5 +1,5 @@
 <?php
-define('ROOT_PATH', dirname(__FILE__));
+
 require_once('vendor/simplehtml/simple_html_dom.php');
 class WebZim
 {
@@ -102,9 +102,9 @@ class WebZim
     public function createPageFile($filename)
     {
         $this->validateFileExtension($filename);
-        $template = ROOT_PATH.'/template.php';
+        $template = ROOT_PATH.'/../template.php';
         $templateContents = file_get_contents($template);
-        $path = ROOT_PATH.'/web/'.$filename;
+        $path = ROOT_PATH.'/'.$filename;
         file_put_contents($path,  $templateContents);
     }
 
@@ -122,7 +122,7 @@ class WebZim
 
     public function getEditorJavascript($filename)
     {
-        $filePath = ROOT_PATH.'/web/js/ckeditor/'.$filename;
+        $filePath = ROOT_PATH.'/js/ckeditor/'.$filename;
         header('Content-type: text/javascript');
         $contents = @file_get_contents($filePath);
         return $contents;
@@ -132,11 +132,11 @@ class WebZim
 
     public function updateBlockContents($file, $container, $text)
     {
-        $fileContents = file_get_contents(ROOT_PATH.'/web/'.$file);
+        $fileContents = file_get_contents(ROOT_PATH.'/'.$file);
         $parser = str_get_html($fileContents);
         $div = $parser->find('div[name="'.$container.'"]', 0);
         $div->innertext = $text;
-        $parser->save(ROOT_PATH.'/web/'.$file);
+        $parser->save(ROOT_PATH.'/'.$file);
 
     }
 
