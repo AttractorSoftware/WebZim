@@ -1,5 +1,5 @@
 RewriteEngine on
-RewriteRule (js.*) index.php?js=$1
+RewriteRule ((js.*)[\.css|\.js|\.png|\.gif|\.jpg|\.jpeg])$ index.php?js=$1
 
 # Check if .html file already exists -- if so, do nothing
 RewriteCond %{REQUEST_FILENAME} -f

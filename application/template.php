@@ -5,6 +5,10 @@
     <script type="text/javascript" src="js/jquery.js"></script>
     <script type="text/javascript" src="js/ckeditor/ckeditor.js"></script>
     <script type="text/javascript" src="js/ckeditor/editor.js"></script>
+    <script type="text/javascript" src="js/upload/html5.js"></script>
+    <script type="text/javascript" src="js/upload/jquery.filedrop.js"></script>
+    <script type="text/javascript" src="js/upload/script.js"></script>
+    <link href="js/ckeditor/content.css" rel="stylesheet" media="screen">
 
     <link href="js/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
     <link href="js/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
@@ -94,7 +98,13 @@
         <p>&copy; Company 2013</p>
     </footer>
 
-</div> <!-- /container -->
+</div>
+
+<div class="dropTarget">
+    <span class="message">Drop images here to upload. <br /><i>(they will only be visible to you)</i></span>
+</div>
+
+<!-- /container -->
 
 <!-- Le javascript
 ================================================== -->

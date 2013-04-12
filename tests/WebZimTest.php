@@ -87,6 +87,15 @@ class WebZimTest extends \PHPUnit_Framework_TestCase
         rmdir(ROOT_PATH.'/people');
     }
 
+    public function testGetImagesListJson()
+    {
+        $expected = array(array("image"=>'/files/avatar.png', 'thumb'=>"/index.php?thumb=files/avatar.png", 'dimensions'=>"140x150"),
+                          array("image"=>'/files/map.png', 'thumb'=>"/index.php?thumb=files/map.png", 'dimensions'=>"682x418"),
+                          array("image"=>'/files/tracery.png', 'thumb'=>"/index.php?thumb=files/tracery.png",'dimensions'=>"774x768" ));
+        $actual = $this->app->getImageFilesAsJson();
+        $this->assertEquals(json_encode($expected), $actual);
+
+    }
 
 
 

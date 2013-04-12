@@ -31,6 +31,12 @@ class WebZim
             exit;
         }
 
+        if ($this->isCreatePageDialogPage()) {
+            $referer = @$_SERVER["HTTP_REFERER"];
+            $filename = FileManager::getFileNameFromPath($_SERVER['REQUEST_URI']);
+            echo $this->getConfirmFormForFile($filename, $referer);
+            exit;
+        }
 
 
         if ($this->isCreatePageConfirmed()) {
@@ -40,25 +46,43 @@ class WebZim
             exit;
         }
 
-        if ($this->isCreatePageDialogPage()) {
-            $referer = @$_SERVER["HTTP_REFERER"];
-            $filename = FileManager::getFileNameFromPath($_SERVER['REQUEST_URI']);
-            echo $this->getConfirmFormForFile($filename, $referer);
-            exit;
-        }
 
         if ($this->isCreatePageNotConfirmed()) {
             $referer = @$_REQUEST['referer'] ? $_REQUEST['referer']: '/index.html';
             header('Location: '.$referer);
-
+            exit;
         }
-        if(@$_FILES['picture'])
+        /*if(@$_FILES['picture'])
         {
             $pic = $_FILES['picture'];
             if(move_uploaded_file($pic['tmp_name'], ROOT_PATH.'/files/'.$pic['name'])){
 
             }
             echo json_encode(array('status'=>'File was uploaded successfuly!'));
+            exit;
+        }*/
+
+        if(@$_GET['images'])
+        {
+            header('Content-type: application/json');
+            echo $this->getImageFilesAsJson();
+            exit;
+        }
+
+        if(@$_GET['thumb'])
+        {
+            $maxWith = 80;
+            $maxHeight = 80;
+
+            $imageFile = @$_GET['thumb'];
+            $image = new SimpleImage();
+            $image->load(ROOT_PATH.'/'.$imageFile);
+            $image->resizeToHeight($maxHeight);
+            $image->resizeToWidth($maxWith);
+            $mime_type = $this->getFileMimeType($imageFile);
+            //header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT', true, 200);
+            header('Content-type: ' . $mime_type);
+            $image->output();
             exit;
         }
 
@@ -132,15 +156,14 @@ class WebZim
         $filename = strchr($filename, 'js');
         $filePath = ROOT_PATH . '/' . $filename;
         $headers = array();#apache_request_headers();
-        if (isset($headers['If-Modified-Since']) && (strtotime($headers['If-Modified-Since']) == filemtime($filePath))) {
+/*        if (isset($headers['If-Modified-Since']) && (strtotime($headers['If-Modified-Since']) == filemtime($filePath))) {
             header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT', true, 304);
-        } else {
-
+        } else {*/
             $mime_type = $this->getFileMimeType($filePath);
-            header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT', true, 200);
+            //header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT', true, 200);
             header('Content-type: ' . $mime_type);
             readfile($filePath);
-        }
+        //}
         return '';
     }
 
@@ -189,6 +212,18 @@ class WebZim
         return "";
     }
 
+    public function getImageFilesAsJson()
+    {
+        $files = FileManager::getFolderListing(ROOT_PATH.'/files');
+        $result = array();
+        foreach($files as $file)
+        {
+            $image_info = getimagesize(ROOT_PATH.'/files/'.$file);
+            $result[] = array("image"=>'/files/'.$file, 'thumb'=>"/index.php?thumb=files/".$file, 'dimensions'=>sprintf("%dx%d", $image_info[0], $image_info[1]));
+        }
+        return json_encode($result);
+    }
+
     /**
      * @return bool
      */
@@ -221,6 +256,8 @@ class WebZim
         echo "You must enter a valid login ID and password to access this resource\n";
         exit;
     }
+
+
 }
 class FileManager
 {
@@ -251,10 +288,107 @@ class FileManager
         $sourceContents = file_get_contents($sourceFile);
         file_put_contents($destinationFile, $sourceContents);
     }
+
+    public static function getFolderListing($folderPath)
+    {
+        $filesList = array();
+        if ($handle = opendir($folderPath)) {
+            while (false !== ($entry = readdir($handle))) {
+                if ($entry != "." && $entry != "..") {
+                    $filesList[] = $entry;
+                }
+            }
+            closedir($handle);
+        }
+        return $filesList;
+    }
 }
 
 
 class MediaFileManager
 {
+
+}
+
+class SimpleImage {
+
+    var $image;
+    var $image_type;
+
+    function load($filename) {
+
+        $image_info = getimagesize($filename);
+        $this->image_type = $image_info[2];
+        if( $this->image_type == IMAGETYPE_JPEG ) {
+
+            $this->image = imagecreatefromjpeg($filename);
+        } elseif( $this->image_type == IMAGETYPE_GIF ) {
+
+            $this->image = imagecreatefromgif($filename);
+        } elseif( $this->image_type == IMAGETYPE_PNG ) {
+
+            $this->image = imagecreatefrompng($filename);
+        }
+    }
+    function save($filename, $image_type=IMAGETYPE_JPEG, $compression=75, $permissions=null) {
+
+        if( $image_type == IMAGETYPE_JPEG ) {
+            imagejpeg($this->image,$filename,$compression);
+        } elseif( $image_type == IMAGETYPE_GIF ) {
+
+            imagegif($this->image,$filename);
+        } elseif( $image_type == IMAGETYPE_PNG ) {
+
+            imagepng($this->image,$filename);
+        }
+        if( $permissions != null) {
+
+            chmod($filename,$permissions);
+        }
+    }
+    function output($image_type=IMAGETYPE_JPEG) {
+
+        if( $image_type == IMAGETYPE_JPEG ) {
+            imagejpeg($this->image);
+        } elseif( $image_type == IMAGETYPE_GIF ) {
+
+            imagegif($this->image);
+        } elseif( $image_type == IMAGETYPE_PNG ) {
+
+            imagepng($this->image);
+        }
+    }
+    function getWidth() {
+
+        return imagesx($this->image);
+    }
+    function getHeight() {
+
+        return imagesy($this->image);
+    }
+    function resizeToHeight($height) {
+
+        $ratio = $height / $this->getHeight();
+        $width = $this->getWidth() * $ratio;
+        $this->resize($width,$height);
+    }
+
+    function resizeToWidth($width) {
+        $ratio = $width / $this->getWidth();
+        $height = $this->getheight() * $ratio;
+        $this->resize($width,$height);
+    }
+
+    function scale($scale) {
+        $width = $this->getWidth() * $scale/100;
+        $height = $this->getheight() * $scale/100;
+        $this->resize($width,$height);
+    }
+
+    function resize($width,$height) {
+        $new_image = imagecreatetruecolor($width, $height);
+        imagecopyresampled($new_image, $this->image, 0, 0, 0, 0, $width, $height, $this->getWidth(), $this->getHeight());
+        $this->image = $new_image;
+    }
 
 }
