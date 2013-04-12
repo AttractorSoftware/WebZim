@@ -10,6 +10,7 @@ class WebZim
 
         if ($this->didUserJustLogin()) {
             header('Location: index.html');
+            exit;
         }
 
         if ($this->doesUserWantToAuthenticate()) {
@@ -17,7 +18,7 @@ class WebZim
         }
 
         if ($this->isMediaRequest()) {
-            $this->returnMediaResponse();
+            echo $this->returnMediaResponse();
         }
         if (!$this->isCorrectCredentials()) {
             exit;
@@ -27,22 +28,40 @@ class WebZim
             $referer = $_SERVER["HTTP_REFERER"];
             $path = FileManager::getFileNameFromPath($referer);
             $this->updateBlockContents($path, $_POST['container'], $_POST['text']);
+            exit;
+        }
+
+
+
+        if ($this->isCreatePageConfirmed()) {
+            $filename = $_REQUEST['filename'];
+            $this->createPageFile($filename);
+            header('Location: /' . $filename);
+            exit;
         }
 
         if ($this->isCreatePageDialogPage()) {
             $referer = @$_SERVER["HTTP_REFERER"];
             $filename = FileManager::getFileNameFromPath($_SERVER['REQUEST_URI']);
             echo $this->getConfirmFormForFile($filename, $referer);
+            exit;
         }
 
-        if ($this->isCreatePageConfirmed()) {
-            $filename = $_REQUEST['filename'];
-            $this->createPageFile($filename);
-            header('Location: /' . $filename);
-        } else if ($this->isCreatePageNotConfirmed()) {
+        if ($this->isCreatePageNotConfirmed()) {
             $referer = @$_REQUEST['referer'] ? $_REQUEST['referer']: '/index.html';
             header('Location: '.$referer);
+
         }
+        if(@$_FILES['picture'])
+        {
+            $pic = $_FILES['picture'];
+            if(move_uploaded_file($pic['tmp_name'], ROOT_PATH.'/files/'.$pic['name'])){
+
+            }
+            echo json_encode(array('status'=>'File was uploaded successfuly!'));
+            exit;
+        }
+
 
     }
 
@@ -60,7 +79,7 @@ class WebZim
 
     public function didUserJustLogin()
     {
-        return FileManager::getFileNameFromPath($_SERVER['REQUEST_URI']) == 'index.php' && $this->isCorrectCredentials();
+        return FileManager::getFileNameFromPath($_SERVER['REQUEST_URI']) == 'index.php' && $this->isCorrectCredentials() && @$_REQUEST['login'] == 1;
     }
 
     public function getConfirmFormForFile($filename, $referer="")
@@ -84,7 +103,7 @@ class WebZim
     {
         $this->validateFileExtension($filename);
         FileManager::createFolderIfNotExists($filename);
-        FileManager::copyFileContents(ROOT_PATH .'/../template.php', ROOT_PATH.'/'.$filename);
+        FileManager::copyFileContents(__DIR__ .'/template.php', ROOT_PATH.'/'.$filename);
 
     }
 
@@ -108,20 +127,46 @@ class WebZim
         }
     }
 
-    public function getMediaFileContents($filename)
+    public function returnMediaFileResponse($filename)
     {
         $filename = strchr($filename, 'js');
         $filePath = ROOT_PATH . '/' . $filename;
-        $headers = apache_request_headers();
+        $headers = array();#apache_request_headers();
         if (isset($headers['If-Modified-Since']) && (strtotime($headers['If-Modified-Since']) == filemtime($filePath))) {
             header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT', true, 304);
         } else {
+
+            $mime_type = $this->getFileMimeType($filePath);
             header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT', true, 200);
+            header('Content-type: ' . $mime_type);
             readfile($filePath);
         }
         return '';
     }
 
+    public function getFileMimeType($filePath)
+    {
+        $extension = strrchr($filePath, '.');
+        $mime_type = '';
+        switch ($extension) {
+            case ".js":
+                $mime_type = 'text/javascript';
+                break;
+            case ".css":
+                $mime_type = 'text/css';
+                break;
+            case ".png":
+                $mime_type = 'image/png';
+                break;
+            case '.jpg':
+                $mime_type = 'image/jpeg';
+                break;
+            case '.gif':
+                $mime_type = 'image/gif';
+                break;
+        }
+        return $mime_type;
+    }
 
     protected function isMediaRequest()
     {
@@ -139,7 +184,7 @@ class WebZim
             }
         }
         if ($mediaFile){
-            $this->getMediaFileContents($mediaFile);
+            return $this->returnMediaFileResponse($mediaFile);
         }
         return "";
     }
