@@ -36,7 +36,8 @@ class WebZim
 
         if ($this->isCreatePageConfirmed()) {
             $filename = $_REQUEST['filename'];
-            $this->createPageFile($filename);
+            $template = $_REQUEST['template'];
+            $this->createPageFile($filename, $template);
             header('Location: /' . $filename);
             exit;
         }
@@ -109,7 +110,16 @@ class WebZim
 
     public function getConfirmFormForFile($filename, $referer="")
     {
+        $files = FileManager::getFolderListing(__DIR__.'/templates');
+        $select = "<select name='template'>";
+        foreach($files as $file)
+        {
+            $select.="<option>".str_replace(".php",'', $file)."</option>";
+        }
+        $select .= "</select>";
+
         return "<html><body><form action='index.php'><p>Do you really want to craete <strong>{$filename}</strong></p>"
+            ."<p>Template: {$select}</p>"
             . "<p><input type='submit' value='Yes' name='yes'> <input type='submit' value='No' name='no'>"
             . "<input type='hidden' name='filename' value='{$filename}'><input type='hidden' name='referer' value='{$referer}'></p></form></body></html>";
     }
@@ -124,11 +134,11 @@ class WebZim
         return isset($_POST['container']) && isset($_POST['text']);
     }
 
-    public function createPageFile($filename)
+    public function createPageFile($filename, $template)
     {
         $this->validateFileExtension($filename);
         FileManager::createFolderIfNotExists($filename);
-        FileManager::copyFileContents(__DIR__ .'/template.php', ROOT_PATH.'/'.$filename);
+        FileManager::copyFileContents(__DIR__ .'/templates/'.$template.'.php', ROOT_PATH.'/'.$filename);
 
     }
 
