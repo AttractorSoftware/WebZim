@@ -31,7 +31,7 @@ CKEDITOR.editorConfig = function( config ) {
         { name: 'colors' },
         { name: 'about' }
     ];
-    config.saveSubmitURL = 'index.php';
+    //config.saveSubmitURL = 'index.php';
 
 
 
@@ -44,8 +44,13 @@ CKEDITOR.editorConfig = function( config ) {
 
     //config.filebrowserImageUploadUrl = 'index.php';
     //config.filebrowserBrowseUrl = 'index.php';
-    //config.filebrowserUploadUrl = 'index.php';
-    config.imageBrowser_listUrl = 'index.php';
+    config.filebrowserUploadUrl = '/index.php?upload=1';
+    config.imageBrowser_listUrl = '/index.php';
+    // Update field with id 'txtUrl' in the 'tab1' tab when file is uploaded.
+
+
+
     // Make dialogs simpler.
    // config.removeDialogTabs = 'image:advanced;link:advanced';
 };
+

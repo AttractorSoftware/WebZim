@@ -15,10 +15,12 @@ class WebZim
 
         if ($this->doesUserWantToAuthenticate()) {
             $this->authenticateUser();
+            exit;
         }
 
         if ($this->isMediaRequest()) {
             echo $this->returnMediaResponse();
+            exit;
         }
         if (!$this->isCorrectCredentials()) {
             exit;
@@ -31,13 +33,6 @@ class WebZim
             exit;
         }
 
-        if ($this->isCreatePageDialogPage()) {
-            $referer = @$_SERVER["HTTP_REFERER"];
-            $filename = FileManager::getFileNameFromPath($_SERVER['REQUEST_URI']);
-            echo $this->getConfirmFormForFile($filename, $referer);
-            exit;
-        }
-
 
         if ($this->isCreatePageConfirmed()) {
             $filename = $_REQUEST['filename'];
@@ -46,21 +41,34 @@ class WebZim
             exit;
         }
 
-
         if ($this->isCreatePageNotConfirmed()) {
             $referer = @$_REQUEST['referer'] ? $_REQUEST['referer']: '/index.html';
             header('Location: '.$referer);
             exit;
         }
+
+        if ($this->isCreatePageDialogPage()) {
+            $referer = @$_SERVER["HTTP_REFERER"];
+            $filename = FileManager::getFileNameFromPath($_SERVER['REQUEST_URI']);
+            echo $this->getConfirmFormForFile($filename, $referer);
+            exit;
+        }
+
         /*if(@$_FILES['picture'])
         {
-            $pic = $_FILES['picture'];
-            if(move_uploaded_file($pic['tmp_name'], ROOT_PATH.'/files/'.$pic['name'])){
 
-            }
-            echo json_encode(array('status'=>'File was uploaded successfuly!'));
-            exit;
         }*/
+
+        if(@$_REQUEST['upload'])
+        {
+            $file = $_FILES['upload'];
+            if(move_uploaded_file($file['tmp_name'], ROOT_PATH.'/files/'.$file['name'])){
+                $funcNum = $_GET['CKEditorFuncNum'] ;
+
+                echo "<script type='text/javascript'>window.parent.CKEDITOR.tools.callFunction($funcNum, '/files/".$file['name']."', 'upload success');</script>";
+            }
+            exit;
+        }
 
         if(@$_GET['images'])
         {

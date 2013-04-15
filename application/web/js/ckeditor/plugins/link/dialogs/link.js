@@ -385,6 +385,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
             ]
             }
 		],
+
 		onShow: function() {
 			var editor = this.getParentEditor(),
 				selection = editor.getSelection(),

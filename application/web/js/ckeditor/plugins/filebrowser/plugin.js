@@ -344,6 +344,7 @@
 
 	CKEDITOR.plugins.add( 'filebrowser', {
 		requires: 'popup',
+        // Update field with id 'txtUrl' in the 'tab1' tab when file is uploaded.
 		init: function( editor, pluginPath ) {
 			editor._.filebrowserFn = CKEDITOR.tools.addFunction( setUrl, editor );
 			editor.on( 'destroy', function() {
