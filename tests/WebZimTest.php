@@ -1,15 +1,69 @@
 <?php
 define('ROOT_PATH', dirname(__FILE__).'/../application/web');
 require_once(ROOT_PATH.'/../webzim.php');
-
+require_once(ROOT_PATH.'/../vendor/httpclient.php');
 
 class WebZimTest extends \PHPUnit_Framework_TestCase
 {
     /** @var WebZim */
     protected $app;
+    /** @var HttpClient */
+    protected $client;
     public function setUp()
     {
         $this->app = new WebZim();
+        $this->client = new HttpClient('webzim.local');
+
+    }
+
+    public function tearDown()
+    {
+        $this->client = null;
+    }
+
+    public function testIndexPageOpens()
+    {
+
+        $this->client->get('/');
+        $this->assertEquals(200 ,$this->client->getStatus());
+    }
+
+
+    public function testLoginPage()
+    {
+
+        $this->client->get('/index.php?login=1');
+        $this->assertEquals(401, $this->client->getStatus());
+    }
+
+    public function testLoginAction()
+    {
+        $this->client->get('/');
+        $this->client->setAutherization('admin', 'admin');
+        $this->client->get('/index.php?login=1');
+        $this->assertEquals(302, $this->client->getStatus());
+    }
+
+    public function testGetPublicMediaFileWithoutUserCredentials()
+    {
+        $this->client->get('/js/jquery.js');
+        $this->assertNotEmpty($this->client->getContent());
+    }
+
+    public function testGetProtectedMediaFileWithoutUserCredentials()
+    {
+        $this->client->get('/js/ckeditor/editor.js');
+        $this->assertEquals(401, $this->client->getStatus());
+    }
+
+    public function testGetProtectedMediaFileWithUserCredentials()
+    {
+        $this->client->setAutherization('admin', 'admin');
+        $this->client->get('/index.php?login=1' );
+        $this->assertEquals(302, $this->client->getStatus());
+        $this->client->setAutherization('admin', 'admin');
+        $this->client->get('/js/ckeditor/editor.js');
+        $this->assertEquals(200, $this->client->getStatus());
     }
 
     public function testCreatePage()
@@ -95,7 +149,6 @@ class WebZimTest extends \PHPUnit_Framework_TestCase
                           array("image"=>'/files/tracery.png', 'thumb'=>"/index.php?thumb=files/tracery.png",'dimensions'=>"774x768" ));
         $actual = $this->app->getImageFilesAsJson();
         $this->assertEquals(json_encode($expected), $actual);
-
     }
 
 

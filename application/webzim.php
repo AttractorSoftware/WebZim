@@ -192,6 +192,7 @@ class WebZim
         $mediaFile = @$_GET['js'];
         if (!$this->isCorrectCredentials()) {
             if (strpos($mediaFile, 'ckeditor') !== false) {
+                header('HTTP/1.0 401 Unauthorized');
                 exit;
             }
         }
