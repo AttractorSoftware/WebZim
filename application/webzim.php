@@ -13,13 +13,13 @@ class WebZim
             exit;
         }
 
-        if ($this->doesUserWantToAuthenticate()) {
+        if ($this->isUserWantToAuthenticate()) {
             $this->authenticateUser();
             exit;
         }
 
         if ($this->isMediaRequest()) {
-            echo $this->returnMediaResponse();
+            $this->returnMediaResponse();
             exit;
         }
         if (!$this->isCorrectCredentials()) {
@@ -43,8 +43,8 @@ class WebZim
         }
 
         if ($this->isCreatePageNotConfirmed()) {
-            $referer = @$_REQUEST['referer'] ? $_REQUEST['referer']: '/index.html';
-            header('Location: '.$referer);
+            $referer = @$_REQUEST['referer'] ? $_REQUEST['referer'] : '/index.html';
+            header('Location: ' . $referer);
             exit;
         }
 
@@ -55,90 +55,80 @@ class WebZim
             exit;
         }
 
-        if(@$_REQUEST['upload'])
-        {
-            $file = $_FILES['upload'];
-            if(move_uploaded_file($file['tmp_name'], ROOT_PATH.'/files/'.$file['name'])){
-                $funcNum = $_GET['CKEditorFuncNum'] ;
-                echo "<script type='text/javascript'>window.parent.CKEDITOR.tools.callFunction($funcNum, '/files/".$file['name']."', 'upload success');</script>";
-            }
+        if ($this->isFileUpload()) {
+            $this->uploadFile();
             exit;
         }
 
-        if(@$_GET['images'])
-        {
+        if ($this->isListImagesForPreview()) {
             header('Content-type: application/json');
             echo $this->getImageFilesAsJson();
             exit;
         }
 
-        if(@$_GET['thumb'])
-        {
-            $maxWith = 80;
-            $maxHeight = 80;
-
-            $imageFile = @$_GET['thumb'];
-            $image = new SimpleImage();
-            $image->load(ROOT_PATH.'/'.$imageFile);
-            $image->resizeToHeight($maxHeight);
-            $image->resizeToWidth($maxWith);
-            $mime_type = $this->getFileMimeType($imageFile);
-            header('Content-type: ' . $mime_type);
-            $image->output();
+        if ($this->isThumnailRequest()) {
+            $this->getImageThumbnail();
             exit;
         }
 
 
     }
 
-    public function isCreatePageConfirmed()
+    protected  function getImageThumbnail()
     {
-        return isset($_REQUEST['filename']) && isset($_REQUEST['yes']);
+        $maxWith = 80;
+        $maxHeight = 80;
+        $imageFile = @$_GET['thumb'];
+        $image = new SimpleImage();
+        $image->load(ROOT_PATH . '/' . $imageFile);
+        $image->resizeToHeight($maxHeight);
+        $image->resizeToWidth($maxWith);
+        $mime_type = $this->getFileMimeType($imageFile);
+        header('Content-type: ' . $mime_type);
+        $image->output();
     }
 
-    public function isCreatePageNotConfirmed()
+    protected  function uploadFile()
     {
-        return isset($_REQUEST['filename']) && isset($_REQUEST['no']);
+        $file = $_FILES['upload'];
+        if (move_uploaded_file($file['tmp_name'], ROOT_PATH . '/files/' . $file['name'])) {
+            $funcNum = $_GET['CKEditorFuncNum'];
+            echo "<script type='text/javascript'>window.parent.CKEDITOR.tools.callFunction($funcNum, '/files/" . $file['name'] . "', 'upload success');</script>";
+        }
     }
 
 
-
-    public function didUserJustLogin()
+    public function getConfirmFormForFile($filename, $referer = "")
     {
-        return FileManager::getFileNameFromPath($_SERVER['REQUEST_URI']) == 'index.php' && $this->isCorrectCredentials() && @$_REQUEST['login'] == 1;
+        return $this->getCreateConfirmPage($filename, $referer);
     }
 
-    public function getConfirmFormForFile($filename, $referer="")
+    /**
+     * @param $filename
+     * @param $referer
+     * @return string
+     */
+    public function getCreateConfirmPage($filename, $referer)
     {
-        $files = FileManager::getFolderListing(__DIR__.'/templates');
+        $files = FileManager::getFolderListing(__DIR__ . '/templates');
         $select = "<select name='template'>";
-        foreach($files as $file)
-        {
-            $select.="<option>".str_replace(".php",'', $file)."</option>";
+        foreach ($files as $file) {
+            $select .= "<option>" . str_replace(".php", '', $file) . "</option>";
         }
         $select .= "</select>";
 
         return "<html><body><form action='index.php'><p>Do you really want to craete <strong>{$filename}</strong></p>"
-            ."<p>Template: {$select}</p>"
+            . "<p>Template: {$select}</p>"
             . "<p><input type='submit' value='Yes' name='yes'> <input type='submit' value='No' name='no'>"
             . "<input type='hidden' name='filename' value='{$filename}'><input type='hidden' name='referer' value='{$referer}'></p></form></body></html>";
     }
 
-    public function isCreatePageDialogPage()
-    {
-        return strpos($_SERVER['REQUEST_URI'], '.html') !== false;
-    }
-
-    public function isUpdateContentAction()
-    {
-        return isset($_POST['container']) && isset($_POST['text']);
-    }
 
     public function createPageFile($filename, $template)
     {
         $this->validateFileExtension($filename);
         FileManager::createFolderIfNotExists($filename);
-        FileManager::copyFileContents(__DIR__ .'/templates/'.$template.'.php', ROOT_PATH.'/'.$filename);
+        FileManager::copyFileContents(__DIR__ . '/templates/' . $template . '.php', ROOT_PATH . '/' . $filename);
 
     }
 
@@ -166,16 +156,10 @@ class WebZim
     {
         $filename = strchr($filename, 'js');
         $filePath = ROOT_PATH . '/' . $filename;
-        $headers = array();#apache_request_headers();
-/*        if (isset($headers['If-Modified-Since']) && (strtotime($headers['If-Modified-Since']) == filemtime($filePath))) {
-            header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT', true, 304);
-        } else {*/
-            $mime_type = $this->getFileMimeType($filePath);
-            //header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT', true, 200);
-            header('Content-type: ' . $mime_type);
-            readfile($filePath);
-        //}
-        return '';
+
+        $mime_type = $this->getFileMimeType($filePath);
+        header('Content-type: ' . $mime_type);
+        readfile($filePath);
     }
 
     public function getFileMimeType($filePath)
@@ -202,43 +186,43 @@ class WebZim
         return $mime_type;
     }
 
-    protected function isMediaRequest()
-    {
-        return @$_GET['js'] != '';
-    }
 
     protected function returnMediaResponse()
     {
         $mediaFile = @$_GET['js'];
-        if(!$this->isCorrectCredentials())
-        {
-            if(strpos($mediaFile, 'ckeditor')!==false)
-            {
-                return "";
+        if (!$this->isCorrectCredentials()) {
+            if (strpos($mediaFile, 'ckeditor') !== false) {
+                exit;
             }
         }
-        if ($mediaFile){
-            return $this->returnMediaFileResponse($mediaFile);
+        if ($mediaFile) {
+            $this->returnMediaFileResponse($mediaFile);
         }
-        return "";
     }
 
     public function getImageFilesAsJson()
     {
-        $files = FileManager::getFolderListing(ROOT_PATH.'/files');
+        $files = FileManager::getFolderListing(ROOT_PATH . '/files');
         $result = array();
-        foreach($files as $file)
-        {
-            $image_info = getimagesize(ROOT_PATH.'/files/'.$file);
-            $result[] = array("image"=>'/files/'.$file, 'thumb'=>"/index.php?thumb=files/".$file, 'dimensions'=>sprintf("%dx%d", $image_info[0], $image_info[1]));
+        foreach ($files as $file) {
+            $image_info = getimagesize(ROOT_PATH . '/files/' . $file);
+            $result[] = array("image" => '/files/' . $file, 'thumb' => "/index.php?thumb=files/" . $file, 'dimensions' => sprintf("%dx%d", $image_info[0], $image_info[1]));
         }
         return json_encode($result);
     }
 
-    /**
-     * @return bool
-     */
-    protected function doesUserWantToAuthenticate()
+
+
+    protected function authenticateUser()
+    {
+        header('WWW-Authenticate: Basic realm="My Realm"');
+        header('HTTP/1.0 401 Unauthorized');
+        echo "You must enter a valid login ID and password to access this resource\n";
+        exit;
+    }
+
+
+    protected function isUserWantToAuthenticate()
     {
         if (!$this->isCorrectCredentials() && @$_GET['login'])
             return true;
@@ -260,16 +244,53 @@ class WebZim
         return false;
     }
 
-    protected function authenticateUser()
+
+    protected function isMediaRequest()
     {
-        header('WWW-Authenticate: Basic realm="My Realm"');
-        header('HTTP/1.0 401 Unauthorized');
-        echo "You must enter a valid login ID and password to access this resource\n";
-        exit;
+        return @$_GET['js'] != '';
     }
 
+    protected  function isThumnailRequest()
+    {
+        return @$_GET['thumb'];
+    }
 
+    protected  function isListImagesForPreview()
+    {
+        return @$_GET['images'];
+    }
+
+    protected  function isFileUpload()
+    {
+        return @$_REQUEST['upload'];
+    }
+
+    public function isUpdateContentAction()
+    {
+        return isset($_POST['container']) && isset($_POST['text']);
+    }
+
+    public function isCreatePageDialogPage()
+    {
+        return strpos($_SERVER['REQUEST_URI'], '.html') !== false;
+    }
+
+    protected  function isCreatePageConfirmed()
+    {
+        return isset($_REQUEST['filename']) && isset($_REQUEST['yes']);
+    }
+
+    protected  function isCreatePageNotConfirmed()
+    {
+        return isset($_REQUEST['filename']) && isset($_REQUEST['no']);
+    }
+
+    protected  function didUserJustLogin()
+    {
+        return FileManager::getFileNameFromPath($_SERVER['REQUEST_URI']) == 'index.php' && $this->isCorrectCredentials() && @$_REQUEST['login'] == 1;
+    }
 }
+
 class FileManager
 {
     public static function getFileNameFromPath($rawPath)
@@ -321,82 +342,90 @@ class MediaFileManager
 
 }
 
-class SimpleImage {
-
+class SimpleImage
+{
     var $image;
     var $image_type;
 
-    function load($filename) {
-
+    function load($filename)
+    {
         $image_info = getimagesize($filename);
         $this->image_type = $image_info[2];
-        if( $this->image_type == IMAGETYPE_JPEG ) {
+        if ($this->image_type == IMAGETYPE_JPEG) {
 
             $this->image = imagecreatefromjpeg($filename);
-        } elseif( $this->image_type == IMAGETYPE_GIF ) {
+        } elseif ($this->image_type == IMAGETYPE_GIF) {
 
             $this->image = imagecreatefromgif($filename);
-        } elseif( $this->image_type == IMAGETYPE_PNG ) {
+        } elseif ($this->image_type == IMAGETYPE_PNG) {
 
             $this->image = imagecreatefrompng($filename);
         }
     }
-    function save($filename, $image_type=IMAGETYPE_JPEG, $compression=75, $permissions=null) {
 
-        if( $image_type == IMAGETYPE_JPEG ) {
-            imagejpeg($this->image,$filename,$compression);
-        } elseif( $image_type == IMAGETYPE_GIF ) {
+    function save($filename, $image_type = IMAGETYPE_JPEG, $compression = 75, $permissions = null)
+    {
+        if ($image_type == IMAGETYPE_JPEG) {
+            imagejpeg($this->image, $filename, $compression);
+        } elseif ($image_type == IMAGETYPE_GIF) {
 
-            imagegif($this->image,$filename);
-        } elseif( $image_type == IMAGETYPE_PNG ) {
+            imagegif($this->image, $filename);
+        } elseif ($image_type == IMAGETYPE_PNG) {
 
-            imagepng($this->image,$filename);
+            imagepng($this->image, $filename);
         }
-        if( $permissions != null) {
+        if ($permissions != null) {
 
-            chmod($filename,$permissions);
+            chmod($filename, $permissions);
         }
     }
-    function output($image_type=IMAGETYPE_JPEG) {
 
-        if( $image_type == IMAGETYPE_JPEG ) {
+    function output($image_type = IMAGETYPE_JPEG)
+    {
+        if ($image_type == IMAGETYPE_JPEG) {
             imagejpeg($this->image);
-        } elseif( $image_type == IMAGETYPE_GIF ) {
+        } elseif ($image_type == IMAGETYPE_GIF) {
 
             imagegif($this->image);
-        } elseif( $image_type == IMAGETYPE_PNG ) {
+        } elseif ($image_type == IMAGETYPE_PNG) {
 
             imagepng($this->image);
         }
     }
-    function getWidth() {
 
+    function getWidth()
+    {
         return imagesx($this->image);
     }
-    function getHeight() {
 
+    function getHeight()
+    {
         return imagesy($this->image);
     }
-    function resizeToHeight($height) {
 
+    function resizeToHeight($height)
+    {
         $ratio = $height / $this->getHeight();
         $width = $this->getWidth() * $ratio;
-        $this->resize($width,$height);
+        $this->resize($width, $height);
     }
 
-    function resizeToWidth($width) {
+    function resizeToWidth($width)
+    {
         $ratio = $width / $this->getWidth();
         $height = $this->getheight() * $ratio;
-        $this->resize($width,$height);
+        $this->resize($width, $height);
     }
 
-    function scale($scale) {
-        $width = $this->getWidth() * $scale/100;
-        $height = $this->getheight() * $scale/100;
-        $this->resize($width,$height);
+    function scale($scale)
+    {
+        $width = $this->getWidth() * $scale / 100;
+        $height = $this->getheight() * $scale / 100;
+        $this->resize($width, $height);
     }
 
-    function resize($width,$height) {
+    function resize($width, $height)
+    {
         $new_image = imagecreatetruecolor($width, $height);
         imagecopyresampled($new_image, $this->image, 0, 0, 0, 0, $width, $height, $this->getWidth(), $this->getHeight());
         $this->image = $new_image;
