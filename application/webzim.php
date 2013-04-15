@@ -54,17 +54,11 @@ class WebZim
             exit;
         }
 
-        /*if(@$_FILES['picture'])
-        {
-
-        }*/
-
         if(@$_REQUEST['upload'])
         {
             $file = $_FILES['upload'];
             if(move_uploaded_file($file['tmp_name'], ROOT_PATH.'/files/'.$file['name'])){
                 $funcNum = $_GET['CKEditorFuncNum'] ;
-
                 echo "<script type='text/javascript'>window.parent.CKEDITOR.tools.callFunction($funcNum, '/files/".$file['name']."', 'upload success');</script>";
             }
             exit;
@@ -88,7 +82,6 @@ class WebZim
             $image->resizeToHeight($maxHeight);
             $image->resizeToWidth($maxWith);
             $mime_type = $this->getFileMimeType($imageFile);
-            //header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT', true, 200);
             header('Content-type: ' . $mime_type);
             $image->output();
             exit;

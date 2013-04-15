@@ -31,7 +31,7 @@ CKEDITOR.editorConfig = function( config ) {
         { name: 'colors' },
         { name: 'about' }
     ];
-    //config.saveSubmitURL = 'index.php';
+    config.saveSubmitURL = 'index.php';
 
 
 

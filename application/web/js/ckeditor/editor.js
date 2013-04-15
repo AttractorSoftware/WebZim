@@ -5,7 +5,15 @@ $(document).ready(function () {
         CKEDITOR.inline(editableBlocks[i], { "extraPlugins": "imagebrowser",
             "imageBrowser_listUrl": "/index.php?images=1"});
     }
+    $(document).click(function(e)
+    {
+        if (e.ctrlKey && $(e.target).prop('tagName')=="A")
+        {
+            window.open(e.target.href,'_blank');
+        }
+    });
 
+    //
     /*var dropTarget = $('.dropTarget'),
         html = $('html'),
         showDrag = false,
