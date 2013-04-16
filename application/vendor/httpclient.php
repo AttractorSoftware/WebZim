@@ -8,6 +8,7 @@ class HttpClient {
     protected $path;
     protected $status;
     protected $content;
+    protected $referer;
 
     public function setStatus($status)
     {
@@ -40,7 +41,7 @@ class HttpClient {
     }
     public function post($path, $data) {
         $this->path = $path;
-        $this->doRequest();
+        $this->doRequest($data);
     }
 
     public function setAutherization($username, $password)
@@ -50,7 +51,7 @@ class HttpClient {
     }
 
 
-    public function doRequest()
+    public function doRequest($data = array())
     {
         $ch = curl_init();
         // set url
@@ -61,8 +62,19 @@ class HttpClient {
         {
             curl_setopt($ch, CURLOPT_USERPWD, $this->username.':'.$this->password);
         }
+        if(count($data))
+        {
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        }
+        if($this->referer)
+        {
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_REFERER, $this->referer);
+        }
         // $output contains the output string
         $output = curl_exec($ch);
+        $this->referer = $this->host.$this->path;
         $this->setContent($output);
         $this->setStatus(curl_getinfo($ch,CURLINFO_HTTP_CODE));
         // close curl resource to free up system resources
@@ -70,5 +82,3 @@ class HttpClient {
     }
 
 }
-
-?>
