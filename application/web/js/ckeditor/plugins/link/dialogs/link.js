@@ -341,6 +341,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
                     required: true,
                     onLoad: function() {
                         this.allowOnChange = true;
+                        this.focus();
                     },
                     onKeyUp: function() {
 

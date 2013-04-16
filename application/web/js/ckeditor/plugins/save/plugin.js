@@ -32,7 +32,7 @@
 		init: function( editor ) {
 			var command = editor.addCommand( pluginName, saveCmd );
 			//command.modes = { wysiwyg: !!( editor.element.$.form ) };
-
+            editor.setKeystroke( CKEDITOR.CTRL + 83 /*S*/, 'save' );
 			editor.ui.addButton( 'Save', {
 				label: editor.lang.save.toolbar,
 				command: pluginName,
