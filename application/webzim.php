@@ -298,6 +298,14 @@ class MediaChain extends ActionHandler
     protected function uploadFile()
     {
         $file = $_FILES['upload'];
+        $fileExtension = strrchr($file['name'], '.');
+
+        if (!in_array($fileExtension, array('.jpg', '.jpeg', '.png', '.gif')))
+        {
+            header('HTTP/1.1 403 Forbidden');
+            return;
+        }
+
         if (move_uploaded_file($file['tmp_name'], ROOT_PATH . '/files/' . $file['name'])) {
             $funcNum = $_GET['CKEditorFuncNum'];
             echo "<script type='text/javascript'>window.parent.CKEDITOR.tools.callFunction($funcNum, '/files/" . $file['name'] . "', 'upload success');</script>";

@@ -196,7 +196,12 @@ class WebZimTest extends \PHPUnit_Framework_TestCase
             array("image"=>'/files/smile_icon.png', 'thumb'=>"/index.php?thumb=files/smile_icon.png",'dimensions'=>"256x256" ));
         unlink(ROOT_PATH.'/files/smile_icon.png');
         $this->assertEquals(json_encode($expected), $actual);
+    }
 
-
+    public function testDoNotAllowUploadOtherThanImagesFiles()
+    {
+        $this->authenticate();
+        $this->client->post('/index.php', array('upload'=>"@".__DIR__."/upload_test.php"));
+        $this->assertEquals(403, $this->client->getStatus());
     }
 }
