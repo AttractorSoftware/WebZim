@@ -35,8 +35,6 @@ class WebZim
         }
         return false;
     }
-
-
 }
 
 abstract class ActionHandler
@@ -121,34 +119,12 @@ class StaticContentChain extends ActionHandler
         $filename = strchr($filename, 'js');
         $filePath = ROOT_PATH . '/' . $filename;
 
-        $mime_type = self::getFileMimeType($filePath);
+        $mime_type = FileManager::getFileMimeType($filePath);
         header('Content-type: ' . $mime_type);
         readfile($filePath);
     }
 
-    public static function getFileMimeType($filePath)
-    {
-        $extension = strrchr($filePath, '.');
-        $mime_type = '';
-        switch ($extension) {
-            case ".js":
-                $mime_type = 'text/javascript';
-                break;
-            case ".css":
-                $mime_type = 'text/css';
-                break;
-            case ".png":
-                $mime_type = 'image/png';
-                break;
-            case '.jpg':
-                $mime_type = 'image/jpeg';
-                break;
-            case '.gif':
-                $mime_type = 'image/gif';
-                break;
-        }
-        return $mime_type;
-    }
+
 }
 
 class PageProcessorChain extends ActionHandler
@@ -314,7 +290,7 @@ class MediaChain extends ActionHandler
         $image->load(ROOT_PATH . '/' . $imageFile);
         $image->resizeToHeight($maxHeight);
         $image->resizeToWidth($maxWith);
-        $mime_type = StaticContentChain::getFileMimeType($imageFile);
+        $mime_type = FileManager::getFileMimeType($imageFile);
         header('Content-type: ' . $mime_type);
         $image->output();
     }
@@ -384,6 +360,29 @@ class FileManager
             closedir($handle);
         }
         return $filesList;
+    }
+    public static function getFileMimeType($filePath)
+    {
+        $extension = strrchr($filePath, '.');
+        $mime_type = '';
+        switch ($extension) {
+            case ".js":
+                $mime_type = 'text/javascript';
+                break;
+            case ".css":
+                $mime_type = 'text/css';
+                break;
+            case ".png":
+                $mime_type = 'image/png';
+                break;
+            case '.jpg':
+                $mime_type = 'image/jpeg';
+                break;
+            case '.gif':
+                $mime_type = 'image/gif';
+                break;
+        }
+        return $mime_type;
     }
 }
 
