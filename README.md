@@ -21,3 +21,18 @@ Editable areas have be created in the following way
 Where `class` has to be `editable` and it is required to specify the `name` attribute for the editable area.
 
 
+## Installation
+The web server need to point to the `application/web` folder
+
+When you open the application for the first time you will have login into the system, so that it will be possible to create
+`index.html` file
+Just open the url `http://yoursitedomain.com/index.php?login=1`, the system will ask you for username and password. After you
+successfully login it will ask to create `index.html` file.
+The username and password can be set in the `application/webzim.php` file, variable `$VALID_USERS`
+
+## Usage
+Public users can only browse through the html files.
+
+The admin can create them and edit contents of the editable areas
+
+
