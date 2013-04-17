@@ -249,6 +249,10 @@ class MediaChain extends ActionHandler
     protected function handleRequest()
     {
 
+        if (!WebZim::isCorrectCredentials()) {
+            return;
+        }
+
         if ($this->isFileUpload()) {
             $this->uploadFile();
             return;
