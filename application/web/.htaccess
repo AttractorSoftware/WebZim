@@ -7,11 +7,6 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_URI} !=/favicon.ico
 RewriteRule ^(.*)$ index.php [QSA,L]
 
-# Check if .html file already exists
-RewriteCond %{REQUEST_FILENAME} -f
 RewriteCond %{HTTP:Accept-Language} (en) [NC]
-RewriteCond %{REQUEST_URI} .html$
-RewriteCond %{DOCUMENT_ROOT}/en%{REQUEST_URI} -f
-RewriteCond %{REQUEST_URI} !^/en
-#RewriteCond %{REMOTE_USER} !=admin
-RewriteRule (.*) en/$1 [QSA,L,R]
+RewriteCond %{REQUEST_URI} ^/$
+RewriteRule .* /en [L,R]

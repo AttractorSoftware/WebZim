@@ -32,7 +32,11 @@ The username and password can be set in the `application/webzim.php` file, varia
 
 ## Usage
 Public users can only browse through the html files.
+In order to create a file admin user has to login into system and access the file that wants to create.
+For example just open `http://yoursitedomain.com/about.html` and there will appear confirmation page for creating `about.html` file
+After **yes** is clicked you will be redirected to that file and will be edit the text of the editable areas.
 
-The admin can create them and edit contents of the editable areas
+
+
 
 
