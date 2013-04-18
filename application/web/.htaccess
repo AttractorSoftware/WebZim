@@ -7,6 +7,10 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_URI} !=/favicon.ico
 RewriteRule ^(.*)$ index.php [QSA,L]
 
-RewriteCond %{HTTP:Accept-Language} (en) [NC]
+RewriteCond %{HTTP:Accept-Language} (ru) [NC]
 RewriteCond %{REQUEST_URI} ^/$
-RewriteRule .* /en [L,R]
+RewriteRule .* /ru/index.html [L,R]
+
+
+RewriteCond %{REQUEST_URI} ^/$
+RewriteRule .* /en/index.html [L,R]
