@@ -2,12 +2,16 @@
 <html>
 <head>
     <meta charset="utf-8" />
+    <title></title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="dc.date.created" content="">
+    <meta name="dc.date.modified" content="">
+    <meta name="author" content="Testing">
+
     <script type="text/javascript" src="js/jquery.js"></script>
     <script type="text/javascript" src="js/ckeditor/ckeditor.js"></script>
     <script type="text/javascript" src="js/ckeditor/editor.js"></script>
-<!--    <script type="text/javascript" src="js/upload/html5.js"></script>-->
-<!--    <script type="text/javascript" src="js/upload/jquery.filedrop.js"></script>-->
-<!--    <script type="text/javascript" src="js/upload/script.js"></script>-->
     <link href="js/ckeditor/content.css" rel="stylesheet" media="screen">
 
     <link href="js/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">

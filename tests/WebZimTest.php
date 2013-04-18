@@ -204,4 +204,39 @@ class WebZimTest extends \PHPUnit_Framework_TestCase
         $this->client->post('/index.php', array('upload'=>"@".__DIR__."/upload_test.php"));
         $this->assertEquals(403, $this->client->getStatus());
     }
+
+    public function testUpdatePageMetaInformation()
+    {
+        $this->authenticate();
+        $this->client->get('/index.php?filename=azamat.html&yes=1&template=base');
+        $this->client->get('/azamat.html');
+
+        $data = array('document_title'=>"Azamat",
+                      'document_description'=>"He is a programmer",
+                      'document_keywords'=>"developer, person, sofware",
+                      'document_author'=>"Azamat Tokhaev",
+                      'document_pub_date'=>"2013-04-12",
+                      'document_edit_date'=>"2013-04-15");
+        $this->client->post('/index.php?update_meta=1', $data);
+        $fileContents = file_get_contents(ROOT_PATH . '/' . 'azamat.html');
+        $parser = str_get_html($fileContents);
+
+        $title = $parser->find('title', 0);
+        $author = $parser->find('meta[name="author"]', 0);
+        $description = $parser->find('meta[name="description"]', 0);
+        $keywords = $parser->find('meta[name="keywords"]', 0);
+        $pubDate = $parser->find('meta[name="dc.date.created"]', 0);
+        $editDate = $parser->find('meta[name="dc.date.modified"]', 0);
+
+        unlink(ROOT_PATH.'/azamat.html');
+
+        $this->assertEquals($data['document_author'], $author->attr['content']);
+        $this->assertEquals($data['document_description'], $description->attr['content']);
+        $this->assertEquals($data['document_keywords'], $keywords->attr['content']);
+        $this->assertEquals($data['document_pub_date'], $pubDate->attr['content']);
+        $this->assertEquals($data['document_edit_date'], $editDate->attr['content']);
+        $this->assertEquals($data['document_title'], $title->innertext);
+
+
+    }
 }

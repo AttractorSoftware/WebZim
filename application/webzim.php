@@ -164,6 +164,28 @@ class PageProcessorChain extends ActionHandler
             echo $this->getConfirmFormForFile($filename, $referer);
             return;
         }
+        if(@$_GET['update_meta'])
+        {
+            $referer = $_SERVER["HTTP_REFERER"];
+            $path = FileManager::getFileNameFromPath($referer);
+            $fileContents = file_get_contents(ROOT_PATH . '/' . $path);
+            $parser = str_get_html($fileContents);
+
+            $title = $parser->find('title', 0);
+            $title->innertext = $_POST['document_title'];
+            $author = $parser->find('meta[name="author"]', 0);
+            $author->attr['content'] = $_POST['document_author'];
+            $description = $parser->find('meta[name="description"]', 0);
+            $description->attr['content'] = $_POST['document_description'];
+            $keywords = $parser->find('meta[name="keywords"]', 0);
+            $keywords->attr['content'] = $_POST['document_keywords'];
+            $pubDate = $parser->find('meta[name="dc.date.created"]', 0);
+            $pubDate->attr['content'] = $_POST['document_pub_date'];
+            $editDate = $parser->find('meta[name="dc.date.modified"]', 0);
+            $editDate->attr['content'] = $_POST['document_edit_date'];
+            $parser->save(ROOT_PATH . '/' . $path);
+
+        }
     }
 
 
@@ -202,6 +224,7 @@ class PageProcessorChain extends ActionHandler
         $this->validateFileExtension($filename);
         FileManager::createFolderIfNotExists($filename);
         FileManager::copyFileContents(__DIR__ . '/templates/' . $template . '.php', ROOT_PATH . '/' . $filename);
+        chmod(ROOT_PATH . '/' . $filename, 0777);
 
     }
 
