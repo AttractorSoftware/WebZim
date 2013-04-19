@@ -11,7 +11,10 @@
     z-index: 1100;
     display:none;
 }*/
-
+.editable
+{
+    -webkit-user-modify: read-write;
+}
 #metaDataToolbar
 {
     position: fixed;

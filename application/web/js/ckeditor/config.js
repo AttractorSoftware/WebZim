@@ -7,7 +7,7 @@ CKEDITOR.editorConfig = function( config ) {
 
     // %REMOVE_START%
     // The configuration options below are needed when running CKEditor from source files.
-    config.plugins = 'dialogui,dialog,about,a11yhelp,basicstyles,blockquote,clipboard,panel,floatpanel,menu,contextmenu,resize,button,toolbar,elementspath,list,indent,enterkey,entities,popup,filebrowser,floatingspace,listblock,richcombo,format,htmlwriter,horizontalrule,wysiwygarea,image,fakeobjects,link,magicline,maximize,pastetext,pastefromword,removeformat,sourcearea,specialchar,menubutton,scayt,stylescombo,tab,table,tabletools,undo,wsc,save,xml,ajax';
+    config.plugins = 'dialogui,dialog,about,a11yhelp,basicstyles,blockquote,clipboard,panel,floatpanel,menu,contextmenu,resize,button,toolbar,elementspath,list,indent,enterkey,entities,popup,filebrowser,floatingspace,listblock,richcombo,format,htmlwriter,horizontalrule,wysiwygarea,image,fakeobjects,link,magicline,maximize,pastetext,pastefromword,sourcearea,specialchar,menubutton,scayt,stylescombo,tab,table,tabletools,undo,wsc,save,xml,ajax';
     config.skin = 'moono';
     // %REMOVE_END%
 
@@ -40,8 +40,10 @@ CKEDITOR.editorConfig = function( config ) {
     //config.removeButtons = 'Underline,Subscript,Superscript';
 
     // Se the most common block elements.
-    config.format_tags = 'p;h1;h2;h3;pre';
-
+    //config.format_tags = 'p;h1;h2;h3;pre';
+    config.removeFormatTags = '';
+    config.removeFormatAttributes='';
+    config.allowedContent = true;
     //config.filebrowserImageUploadUrl = 'index.php';
     //config.filebrowserBrowseUrl = 'index.php';
     config.filebrowserUploadUrl = '/index.php?upload=1';

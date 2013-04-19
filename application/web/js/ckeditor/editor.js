@@ -16,30 +16,19 @@ $(document).ready(function () {
         }
     });
 
-
-    //$('body').append($metaDataToolbar);
-    //
-    /*var dropTarget = $('.dropTarget'),
-        html = $('html'),
-        showDrag = false,
-        timeout = -1;
-
-    html.bind('dragenter', function () {
-        dropTarget.show();
-        showDrag = true;
+    $('.carousel').each(function(){
+        $(this).carousel({
+            interval: false
+        });
     });
-    html.bind('dragover', function(){
-        showDrag = true;
-        dropTarget.show();
+
+    $('.editable').click(function() {
+        $(this).attr('contenteditable', 'true');
     });
-    html.bind('drop', function (e) {
-        showDrag = false;
-        clearTimeout( timeout );
-        timeout = setTimeout( function(){
-            if( !showDrag ){ dropTarget.hide(); }
-        }, 200 );
-    });*/
 });
+
+
+
 
 var MetaDataToolBar = {
     init: function()
